@@ -1,0 +1,5 @@
+{
+  "name": "Microbiology Jeopardy Pro",
+  "description": "A full-featured, interactive Jeopardy game with AI-powered answer checking. Choose your players, find Daily Doubles, and race the clock to test your microbiology knowledge. Features 10 complete games with both Jeopardy and Double Jeopardy rounds, music, and visual clues for every question.",
+  "requestFramePermissions": []
+}

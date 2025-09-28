@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Microbiology Jeopardy Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://aistudiocdn.com/@google/genai@^1.21.0",
+          "react/": "https://aistudiocdn.com/react@^19.1.1/",
+          "react": "https://aistudiocdn.com/react@^19.1.1",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+        }
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+      body {
+        font-family: 'Roboto', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-900 text-white">
+    <div id="root"></div>
+    <!-- Audio elements for the game -->
+    <audio id="theme-music" loop>
+      <source src="https://codeskulptor-demos.commondatastorage.googleapis.com/jeopardy.ogg" type="audio/ogg">
+    </audio>
+    <audio id="thinking-music">
+       <source src="https://cdn.pixabay.com/audio/2022/05/23/audio_87b18221ce.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="correct-sound">
+      <source src="https://cdn.pixabay.com/audio/2022/03/10/audio_c86c3c18b1.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="incorrect-sound">
+      <source src="https://cdn.pixabay.com/audio/2021/08/04/audio_a7db0f2a44.mp3" type="audio/mpeg">
+    </audio>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
