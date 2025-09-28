@@ -109,7 +109,7 @@ export const games: Game[] = [
         ]
       }
     ],
-    finalJeopardy: { question: "This is the only human disease to have been officially declared eradicated worldwide, a feat accomplished in 1980 through global vaccination efforts.", answer: "Smallpox" }
+    finalJeopardy: { category: "Public Health Triumphs", question: "This is the only human disease to have been officially declared eradicated worldwide, a feat accomplished in 1980 through global vaccination efforts.", answer: "Smallpox" }
   },
   // Game 2
   {
@@ -219,7 +219,7 @@ export const games: Game[] = [
         ]
       }
     ],
-    finalJeopardy: { question: "This disease is caused by a prion, a misfolded protein, and is known in some contexts as 'mad cow disease.'", answer: "Creutzfeldt-Jakob disease (CJD) or Bovine Spongiform Encephalopathy (BSE)" }
+    finalJeopardy: { category: "Prion Diseases", question: "This disease is caused by a prion, a misfolded protein, and is known in some contexts as 'mad cow disease.'", answer: "Creutzfeldt-Jakob disease (CJD) or Bovine Spongiform Encephalopathy (BSE)" }
   },
   // Game 3
   {
@@ -329,7 +329,7 @@ export const games: Game[] = [
         ]
       }
     ],
-    finalJeopardy: { question: "This organism, a spirochete, is the causative agent of syphilis.", answer: "Treponema pallidum" }
+    finalJeopardy: { category: "Syphilology", question: "This organism, a spirochete, is the causative agent of syphilis.", answer: "Treponema pallidum" }
   },
   // Game 4
   {
@@ -341,7 +341,7 @@ export const games: Game[] = [
     doubleJeopardy: [
         // Categories for Game 4 Double Jeopardy...
     ],
-    finalJeopardy: { question: "This bacterial species is the leading cause of community-acquired pneumonia in adults.", answer: "Streptococcus pneumoniae" }
+    finalJeopardy: { category: "Pneumonia", question: "This bacterial species is the leading cause of community-acquired pneumonia in adults.", answer: "Streptococcus pneumoniae" }
   },
   // Game 5
   {
@@ -353,7 +353,7 @@ export const games: Game[] = [
     doubleJeopardy: [
         // Categories for Game 5 Double Jeopardy...
     ],
-    finalJeopardy: { question: "This is the most common helminthic infection worldwide, often diagnosed by finding eggs in the stool.", answer: "Ascaris lumbricoides" }
+    finalJeopardy: { category: "Helminthology", question: "This is the most common helminthic infection worldwide, often diagnosed by finding eggs in the stool.", answer: "Ascaris lumbricoides" }
   },
   // Game 6
   {
@@ -365,7 +365,7 @@ export const games: Game[] = [
     doubleJeopardy: [
         // Categories for Game 6 Double Jeopardy...
     ],
-    finalJeopardy: { question: "This is the term for a severe, life-threatening malaria infection characterized by cerebral involvement.", answer: "Cerebral malaria" }
+    finalJeopardy: { category: "Malaria", question: "This is the term for a severe, life-threatening malaria infection characterized by cerebral involvement.", answer: "Cerebral malaria" }
   },
   // Game 7
   {
@@ -377,7 +377,7 @@ export const games: Game[] = [
     doubleJeopardy: [
         // Categories for Game 7 Double Jeopardy...
     ],
-    finalJeopardy: { question: "This type of hypersensitivity reaction is responsible for the rash in poison ivy and the positive result in a PPD test for tuberculosis.", answer: "Type IV (Delayed-type) hypersensitivity" }
+    finalJeopardy: { category: "Immunology", question: "This type of hypersensitivity reaction is responsible for the rash in poison ivy and the positive result in a PPD test for tuberculosis.", answer: "Type IV (Delayed-type) hypersensitivity" }
   },
   // Game 8
   {
@@ -389,7 +389,7 @@ export const games: Game[] = [
     doubleJeopardy: [
         // Categories for Game 8 Double Jeopardy...
     ],
-    finalJeopardy: { question: "This class of antifungal drugs inhibits the synthesis of ergosterol, a key component of the fungal cell membrane.", answer: "Azoles (e.g., fluconazole, itraconazole)" }
+    finalJeopardy: { category: "Antifungals", question: "This class of antifungal drugs inhibits the synthesis of ergosterol, a key component of the fungal cell membrane.", answer: "Azoles (e.g., fluconazole, itraconazole)" }
   },
   // Game 9
   {
@@ -401,7 +401,7 @@ export const games: Game[] = [
     doubleJeopardy: [
         // Categories for Game 9 Double Jeopardy...
     ],
-    finalJeopardy: { question: "This is the most common cause of bacterial meningitis in adults of all ages.", answer: "Streptococcus pneumoniae" }
+    finalJeopardy: { category: "Meningitis", question: "This is the most common cause of bacterial meningitis in adults of all ages.", answer: "Streptococcus pneumoniae" }
   },
   // Game 10
   {
@@ -413,7 +413,7 @@ export const games: Game[] = [
     doubleJeopardy: [
         // Categories for Game 10 Double Jeopardy...
     ],
-    finalJeopardy: { question: "This scientist's postulates are a set of four criteria designed to establish a causal relationship between a microbe and a disease.", answer: "Robert Koch" }
+    finalJeopardy: { category: "History of Microbiology", question: "This scientist's postulates are a set of four criteria designed to establish a causal relationship between a microbe and a disease.", answer: "Robert Koch" }
   }
 ];
 // Fill in the placeholder games to meet the 10-game requirement.

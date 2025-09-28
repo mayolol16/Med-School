@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Category, Player, Question, Game } from './types';
+import { Category, Player, Question, Game, PerformanceRecord } from './types';
 import GameBoard from './components/GameBoard';
 import QuestionModal from './components/QuestionModal';
 import Scoreboard from './components/Scoreboard';
@@ -7,8 +7,11 @@ import { games } from './data/games';
 import GameSelection from './components/GameSelection';
 import { checkAnswer } from './services/geminiService';
 import PlayerSetup from './components/PlayerSetup';
+import FinalJeopardyModal from './components/FinalJeopardyModal';
+import Recap from './components/Recap';
 
-type GameStage = 'playerSetup' | 'gameSelection' | 'gameplay';
+
+type GameStage = 'playerSetup' | 'gameSelection' | 'gameplay' | 'finalJeopardy' | 'recap';
 
 const App: React.FC = () => {
   const [gameStage, setGameStage] = useState<GameStage>('playerSetup');
@@ -19,6 +22,8 @@ const App: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [activePlayer, setActivePlayer] = useState<Player | null>(null);
+  const [performanceHistory, setPerformanceHistory] = useState<PerformanceRecord[]>([]);
+  const [useAI, setUseAI] = useState<boolean>(true);
 
   const themeAudioRef = useRef<HTMLAudioElement | null>(null);
   const thinkingAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -62,6 +67,7 @@ const App: React.FC = () => {
     setSelectedGame(freshGame);
     setCurrentBoard(freshGame.jeopardy);
     setRound('jeopardy');
+    setPerformanceHistory([]);
     setGameStage('gameplay');
     playSound('stopTheme');
   };
@@ -78,7 +84,7 @@ const App: React.FC = () => {
   };
 
   const handleAnswer = (correct: boolean, wager: number) => {
-    if (currentQuestion) {
+    if (currentQuestion && activePlayer) {
       const points = currentQuestion.isDailyDouble ? wager : currentQuestion.points;
       
       if(correct) playSound('correct');
@@ -91,6 +97,17 @@ const App: React.FC = () => {
             : p
         )
       );
+
+      const categoryTitle = currentBoard?.find(cat => cat.questions.some(q => q.question === currentQuestion.question))?.title || 'Unknown Category';
+      
+      const newRecord: PerformanceRecord = {
+          playerName: activePlayer.name,
+          category: categoryTitle,
+          question: currentQuestion.question,
+          correctAnswer: currentQuestion.answer,
+          correct
+      };
+      setPerformanceHistory(prev => [...prev, newRecord]);
       
       setCurrentBoard(prevBoard =>
         prevBoard!.map(category => ({
@@ -120,6 +137,8 @@ const App: React.FC = () => {
   
   const backToPlayerSetup = () => {
     backToSelection();
+    setPlayers([]);
+    setActivePlayer(null);
     setGameStage('playerSetup');
     playSound('stopTheme');
   }
@@ -128,7 +147,22 @@ const App: React.FC = () => {
     if (selectedGame) {
       setCurrentBoard(selectedGame.doubleJeopardy);
       setRound('doubleJeopardy');
+      // Reset active player to the player with the lowest score
+      const lowestScoringPlayer = [...players].sort((a, b) => a.score - b.score)[0];
+      setActivePlayer(lowestScoringPlayer);
     }
+  };
+
+  const handleFinalJeopardyFinish = (finalPlayers: Player[]) => {
+      setPlayers(finalPlayers);
+      setGameStage('recap');
+      playSound('theme');
+  };
+
+  const handlePlayAgain = () => {
+      if (selectedGame) {
+          handleSelectGame(selectedGame);
+      }
   };
 
   const isRoundComplete = useMemo(() => {
@@ -141,12 +175,13 @@ const App: React.FC = () => {
       case 'playerSetup':
         return <PlayerSetup onSetupComplete={handlePlayerSetup} />;
       case 'gameSelection':
-        return <GameSelection games={games} onSelectGame={handleSelectGame} onBack={backToPlayerSetup} />;
+        return <GameSelection games={games} onSelectGame={handleSelectGame} onBack={backToPlayerSetup} useAI={useAI} onToggleAI={setUseAI} />;
       case 'gameplay':
+        if (!currentBoard || !activePlayer) return null;
         return (
           <div>
-            <Scoreboard players={players} activePlayerId={activePlayer!.id} />
-            <GameBoard data={currentBoard!} onSelectQuestion={handleSelectQuestion} />
+            <Scoreboard players={players} activePlayerId={activePlayer.id} />
+            <GameBoard data={currentBoard} onSelectQuestion={handleSelectQuestion} />
             <div className="text-center mt-8 flex justify-center items-center gap-4">
                 <button 
                   onClick={backToSelection}
@@ -162,8 +197,35 @@ const App: React.FC = () => {
                     Start Double Jeopardy!
                   </button>
                 )}
+                 {isRoundComplete && round === 'doubleJeopardy' && (
+                  <button 
+                    onClick={() => setGameStage('finalJeopardy')}
+                    className="px-6 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-colors duration-300 animate-pulse"
+                  >
+                    Start Final Jeopardy!
+                  </button>
+                )}
             </div>
           </div>
+        );
+      case 'finalJeopardy':
+        return selectedGame ? (
+          <FinalJeopardyModal
+            players={players}
+            question={selectedGame.finalJeopardy}
+            onFinish={handleFinalJeopardyFinish}
+            playSound={playSound}
+            useAI={useAI}
+          />
+        ) : null;
+      case 'recap':
+        return (
+            <Recap
+                players={players}
+                history={performanceHistory}
+                onPlayAgain={handlePlayAgain}
+                onNewGame={backToSelection}
+            />
         );
       default:
         return null;
@@ -177,7 +239,7 @@ const App: React.FC = () => {
         <h1 className="text-5xl font-bold tracking-wider text-yellow-400" style={{ textShadow: '2px 2px 4px #000000' }}>
           Microbiology Jeopardy Pro
         </h1>
-         {selectedGame && (
+         {selectedGame && gameStage === 'gameplay' && (
           <h2 className="text-2xl mt-2 text-blue-300 font-semibold capitalize">
             {round.replace(/([A-Z])/g, ' $1')} Round
           </h2>
@@ -196,6 +258,7 @@ const App: React.FC = () => {
           checkAnswer={checkAnswer}
           activePlayer={activePlayer}
           playSound={playSound}
+          useAI={useAI}
         />
       )}
     </div>

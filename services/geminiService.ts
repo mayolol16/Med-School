@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { AnswerFeedback } from '../types';
+import { AnswerFeedback, PerformanceRecord, RecapData } from '../types';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable not set");
@@ -20,6 +20,28 @@ const answerSchema = {
     },
   },
   required: ['isCorrect', 'explanation'],
+};
+
+const recapSchema = {
+    type: Type.OBJECT,
+    properties: {
+        strengths: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of topics or categories the player seems to understand well."
+        },
+        weaknesses: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of topics or categories where the player struggled."
+        },
+        reviewTopics: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of specific concepts to review, based on incorrectly answered questions."
+        }
+    },
+    required: ['strengths', 'weaknesses', 'reviewTopics']
 };
 
 
@@ -60,4 +82,58 @@ export const checkAnswer = async (question: string, correctAnswer: string, userA
       explanation: "Sorry, I couldn't verify the answer at this time."
     };
   }
+};
+
+
+export const generateRecap = async (history: PerformanceRecord[]): Promise<RecapData> => {
+    if (history.length === 0) {
+        return {
+            strengths: ["No questions were answered."],
+            weaknesses: ["No questions were answered."],
+            reviewTopics: ["Play a game to get a performance review!"]
+        };
+    }
+
+    const formattedHistory = history.map(record => 
+        `Player: ${record.playerName}, Category: "${record.category}", Question: "${record.question}", Correct Answer: "${record.correctAnswer}", Correct: ${record.correct}`
+    ).join('\n');
+
+    const prompt = `
+    You are an expert microbiology professor and tutor. You are analyzing a student's performance in a Jeopardy game to provide constructive feedback.
+    Based on the following game history, identify the player's strengths, weaknesses, and create a targeted list of topics they should review.
+
+    Game History:
+    ${formattedHistory}
+
+    Analysis Instructions:
+    1.  **Strengths**: Identify 2-3 categories or concepts where the player(s) consistently answered correctly. List these as bullet points.
+    2.  **Weaknesses**: Identify 2-3 categories or concepts where the player(s) frequently answered incorrectly. List these as bullet points.
+    3.  **Review Topics**: Based *only* on the questions answered incorrectly, create a concise list of 3-5 specific microbiological concepts the student should review. Do not invent new topics.
+    
+    Provide your response as a valid JSON object. Be encouraging but direct in your feedback.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: recapSchema,
+                temperature: 0.5,
+            },
+        });
+
+        const jsonText = response.text.trim();
+        const parsedData: RecapData = JSON.parse(jsonText);
+        return parsedData;
+
+    } catch (error) {
+        console.error("Error generating recap with Gemini:", error);
+        return {
+            strengths: ["Could not determine strengths due to an error."],
+            weaknesses: ["Could not determine weaknesses due to an error."],
+            reviewTopics: ["Unable to generate review topics at this time. Please try again later."]
+        };
+    }
 };

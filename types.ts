@@ -22,10 +22,11 @@ export interface Player {
 export interface FinalJeopardyQuestion {
   question: string;
   answer: string;
+  category?: string; // Optional category title
 }
 
 export interface Game {
-  title: string;
+  title:string;
   description: string;
   jeopardy: Category[];
   doubleJeopardy: Category[];
@@ -36,4 +37,18 @@ export interface Game {
 export interface AnswerFeedback {
   isCorrect: boolean;
   explanation: string;
+}
+
+export interface PerformanceRecord {
+  playerName: string;
+  category: string;
+  question: string;
+  correct: boolean;
+  correctAnswer: string;
+}
+
+export interface RecapData {
+  strengths: string[];
+  weaknesses: string[];
+  reviewTopics: string[];
 }
