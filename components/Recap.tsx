@@ -17,6 +17,74 @@ const Recap: React.FC<RecapProps> = ({ players, history, onPlayAgain, onNewGame 
   const sortedPlayers = useMemo(() => [...players].sort((a, b) => b.score - a.score), [players]);
   const winner = sortedPlayers[0];
 
+  const playerStats = useMemo(() => {
+    return players.map(player => {
+      const playerHistory = history.filter(record => record.playerName === player.name);
+      if (playerHistory.length === 0) {
+        return {
+          playerName: player.name,
+          totalAnswered: 0,
+          correct: 0,
+          incorrect: 0,
+          accuracy: 'N/A',
+          bestCategory: 'N/A',
+          worstCategory: 'N/A'
+        };
+      }
+
+      const correct = playerHistory.filter(r => r.correct).length;
+      const incorrect = playerHistory.length - correct;
+      const accuracy = `${((correct / playerHistory.length) * 100).toFixed(0)}%`;
+
+      const categoryPerformance = playerHistory.reduce((acc, record) => {
+        if (!acc[record.category]) {
+          acc[record.category] = { correct: 0, total: 0 };
+        }
+        acc[record.category].total++;
+        if (record.correct) {
+          acc[record.category].correct++;
+        }
+        return acc;
+      }, {} as { [category: string]: { correct: number, total: number } });
+
+      let bestCategory = 'N/A';
+      let worstCategory = 'N/A';
+      let maxAccuracy = -1;
+      let minAccuracy = 101;
+
+      // FIX: Replaced `Object.entries` with `Object.keys` to resolve type inference issues where `perf` was `unknown`.
+      Object.keys(categoryPerformance).forEach((category) => {
+        const perf = categoryPerformance[category];
+        if (perf.total > 0) {
+            const catAccuracy = (perf.correct / perf.total) * 100;
+            if (catAccuracy >= maxAccuracy) {
+                maxAccuracy = catAccuracy;
+                bestCategory = category;
+            }
+            if (catAccuracy <= minAccuracy) {
+                minAccuracy = catAccuracy;
+                worstCategory = category;
+            }
+        }
+      });
+      
+      if (bestCategory === worstCategory) {
+          worstCategory = 'N/A';
+      }
+
+      return {
+        playerName: player.name,
+        totalAnswered: playerHistory.length,
+        correct,
+        incorrect,
+        accuracy,
+        bestCategory,
+        worstCategory,
+      };
+    });
+  }, [players, history]);
+
+
   const handleGenerateRecap = async () => {
     setLoading(true);
     const data = await generateRecap(history);
@@ -48,7 +116,50 @@ const Recap: React.FC<RecapProps> = ({ players, history, onPlayAgain, onNewGame 
         </div>
       </div>
       
-      {!recapData && !loading && (
+      {/* Performance Breakdown Section */}
+      <div className="my-8">
+        <h3 className="text-2xl font-semibold text-center mb-4">Performance Breakdown</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {playerStats.map((stats, index) => (
+            <div key={index} className="bg-blue-900 p-4 rounded-lg border border-blue-700 flex flex-col">
+              <h4 className="text-xl font-bold text-yellow-400 mb-3 text-center">{stats.playerName}</h4>
+              {stats.totalAnswered > 0 ? (
+                <div className="space-y-2 text-gray-300 flex-grow">
+                  <div className="flex justify-between items-center">
+                    <span>Accuracy:</span>
+                    <span className="font-bold text-xl">{stats.accuracy}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Correct / Incorrect:</span>
+                    <span className="font-bold">
+                      <span className="text-green-400">{stats.correct}</span> / <span className="text-red-400">{stats.incorrect}</span>
+                    </span>
+                  </div>
+                  <div className="border-t border-blue-800 my-3"></div>
+                  <div className="text-sm space-y-2">
+                    <p>
+                      <span className="font-semibold text-green-300">Strongest Category:</span>
+                      <br/> 
+                      <span className="pl-2">{stats.bestCategory}</span>
+                    </p>
+                    {stats.worstCategory !== 'N/A' && (
+                        <p>
+                          <span className="font-semibold text-red-300">Weakest Category:</span>
+                          <br/> 
+                          <span className="pl-2">{stats.worstCategory}</span>
+                        </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-400 text-center my-auto">No questions answered.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!recapData && !loading && history.length > 0 && (
         <div className="text-center my-8">
           <button
             onClick={handleGenerateRecap}
@@ -68,7 +179,7 @@ const Recap: React.FC<RecapProps> = ({ players, history, onPlayAgain, onNewGame 
 
       {recapData && (
         <div className="bg-gray-900 p-6 rounded-lg border border-gray-700 my-8 animate-fade-in">
-          <h3 className="text-3xl font-bold text-center text-yellow-400 mb-6">Performance Review</h3>
+          <h3 className="text-3xl font-bold text-center text-yellow-400 mb-6">AI Performance Review</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
             <div>
               <h4 className="text-xl font-semibold text-green-400 mb-2 border-b-2 border-green-400 pb-1">Strengths</h4>
